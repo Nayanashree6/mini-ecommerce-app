@@ -1,0 +1,253 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini E-Commerce Store</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Mini Shop 🛍️</h1>
+    <p>Discover products you love</p>
+    <h3>Cart: <span id="cart-count">0</span> items</h3>
+    <button id="checkout-btn">Checkout</button>
+  </header>
+
+  <main>
+    <h2>Our Products</h2>
+    <section id="products" class="products"></section>
+  </main>
+
+  <div id="checkout-modal" class="modal" role="dialog"
+       aria-modal="true" aria-labelledby="modal-title" hidden>
+    <div class="modal-content">
+      <button id="close-modal" class="close-btn" aria-label="Close">✖</button>
+      <h2 id="modal-title">Order Summary</h2>
+      <div id="order-summary"></div>
+      <h3>Total: ₹<span id="total-price">0.00</span></h3>
+      <button id="place-order">Place Order</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+```css
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f6f9;
+  color: #222;
+}
+
+header {
+  background: #243b55;
+  color: white;
+  text-align: center;
+  padding: 25px 15px;
+}
+
+button {
+  background: #ff9800;
+  color: #fff;
+  border: none;
+  padding: 11px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+button:hover {
+  opacity: 0.85;
+}
+
+main {
+  max-width: 1100px;
+  margin: 25px auto;
+  padding: 15px;
+}
+
+main h2 {
+  text-align: center;
+}
+
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.product {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 3px 12px #00000012;
+}
+
+.product .emoji {
+  font-size: 55px;
+}
+
+.product h3 {
+  margin: 12px 0;
+}
+
+.product p {
+  color: #555;
+}
+
+.product button {
+  width: 100%;
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  background: #0009;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+}
+
+.modal-content {
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.close-btn {
+  float: right;
+  background: #555;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 8px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+@media (max-width: 480px) {
+  header h1 {
+    font-size: 25px;
+  }
+}
+```javascript
+const products = [
+  { id: 1, name: "Headphones", price: 799, emoji: "🎧" },
+  { id: 2, name: "Smart Watch", price: 1499, emoji: "⌚" },
+  { id: 3, name: "Shoes", price: 1999, emoji: "👟" },
+  { id: 4, name: "Backpack", price: 999, emoji: "🎒" },
+  { id: 5, name: "Camera", price: 2499, emoji: "📷" },
+  { id: 6, name: "Sunglasses", price: 499, emoji: "🕶️" }
+];
+
+const cart = [];
+
+const productsContainer = document.getElementById("products");
+const cartCount = document.getElementById("cart-count");
+const modal = document.getElementById("checkout-modal");
+const orderSummary = document.getElementById("order-summary");
+const totalPrice = document.getElementById("total-price");
+
+function renderProducts() {
+  productsContainer.innerHTML = "";
+
+  products.forEach(product => {
+    const card = document.createElement("article");
+    card.className = "product";
+
+    const emoji = document.createElement("div");
+    emoji.className = "emoji";
+    emoji.textContent = product.emoji;
+
+    const name = document.createElement("h3");
+    name.textContent = product.name;
+
+    const price = document.createElement("p");
+    price.textContent = `Price: ₹${product.price.toFixed(2)}`;
+
+    const button = document.createElement("button");
+    button.textContent = "Add to Cart";
+    button.addEventListener("click", () => addToCart(product.id));
+
+    card.append(emoji, name, price, button);
+    productsContainer.appendChild(card);
+  });
+}
+
+function addToCart(productId) {
+  const product = products.find(item => item.id === productId);
+  if (!product) return;
+
+  cart.push(product);
+  cartCount.textContent = cart.length;
+}
+
+function showCheckout() {
+  if (cart.length === 0) {
+    alert("Your cart is empty. Please add a product first.");
+    return;
+  }
+
+  orderSummary.innerHTML = "";
+
+  cart.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "order-item";
+
+    const name = document.createElement("span");
+    name.textContent = item.name;
+
+    const price = document.createElement("span");
+    price.textContent = `₹${item.price.toFixed(2)}`;
+
+    row.append(name, price);
+    orderSummary.appendChild(row);
+  });
+
+  const total = cart.reduce((sum, item) => sum + item.price, 0);
+  totalPrice.textContent = total.toFixed(2);
+  modal.hidden = false;
+}
+
+document.getElementById("checkout-btn")
+  .addEventListener("click", showCheckout);
+
+document.getElementById("close-modal")
+  .addEventListener("click", () => {
+    modal.hidden = true;
+  });
+
+modal.addEventListener("click", event => {
+  if (event.target === modal) {
+    modal.hidden = true;
+  }
+});
+
+document.getElementById("place-order")
+  .addEventListener("click", () => {
+    alert("Order preview completed! Thank you for shopping.");
+    cart.length = 0;
+    cartCount.textContent = "0";
+    modal.hidden = true;
+  });
+
+renderProducts();
